@@ -1,13 +1,16 @@
 import * as functions from "firebase-functions";
 import {Telegraf} from "telegraf";
 import fetch from "node-fetch";
+import rollLink from "./sourceRandomizer.js";
 
 const getWaifuUrl = async (type) => {
-  const response = await fetch("https://api.waifu.pics/"+type+"/waifu");
-  const json = await response.json();
-  return json.url;
-};
+  const waifu = rollLink()
+  const response = await fetch(waifu.getUrl(type))
+  const json = await response.json()
+  const result= waifu.parse(json)  
 
+  return result
+};
 
 const config = functions.config();
 
@@ -26,17 +29,17 @@ bot.command("waifu", (ctx) => {
   console.log(args);
 
   getWaifuUrl("nsfw")
-      .then((url) => ctx.reply(url))
-      .catch((err) => ctx.reply(err));
+  .then((url) => ctx.reply(url))
+  .catch((err) => ctx.reply(err.message));
 });
 
 bot.command("waifusafe", (ctx) => {
   // get args
+  console.log("waifusafe");
   getWaifuUrl("sfw")
       .then((url) => ctx.reply(url))
       .catch((err) => ctx.reply(err));
 });
-
 bot.launch();
 
 // bot.telegram.setWebhook(`https://${REGION}-${PROJECT_ID}.cloudfunctions.net/${FUNCTION_NAME}`);
